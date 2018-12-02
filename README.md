@@ -1,4 +1,4 @@
-# Prometheus Operator
+# Prometheus Operator Testing
 
 ## Overview 
 
@@ -81,13 +81,19 @@ cd Prometheus_Testing/prometheus-operator/contrib/kube-prometheus
 kubectl create -f ./manifests
 ```
 
-To access the dashboards:
+To access the dashboards, we need to port-forward from the node to each pod:
 
 ```
 kubectl --namespace monitoring port-forward svc/prometheus-k8s 9090
 kubectl --namespace monitoring port-forward svc/grafana 3000
 kubectl --namespace monitoring port-forward svc/alertmanager-main 9093
 ```
+
+The dashboards for each service can now be visited using the links below:
+
+* [Prometheus](http://localhost:9090)
+* [Grafana](http://localhost:3000)
+* [AlertManager](http://localhost:9093)
 
 To teardown the monitoring stack:
 
