@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: logstash
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        name: logstash
+    spec:
+      containers:
+      - env:
+        #- name: ES_JAVA_OPTS
+        #  value: -Xms256m -Xms256m
+        name: logstash
+        image: cheuklau/logstash:latest
+        ports:
+        - containerPort: 5044

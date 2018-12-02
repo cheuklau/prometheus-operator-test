@@ -1,0 +1,39 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: microservice
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        name: microservice
+    spec:
+      containers:
+      - name: microservice
+        image: cheuklau/microservice:latest
+        env:
+        # Time in seconds between log generation
+        - name: WAIT_TIME
+          value: '5'
+        # Percent chance of WARN log
+        - name: PER_WARN
+          value: '10'
+        # Percent chance of ERROR log
+        - name: PER_ERR
+          value: '5'
+        volumeMounts:
+        - name: log-dir
+          mountPath: /logtest
+      # Side-car for Filebeat
+      - name: filebeat
+        image: cheuklau/filebeat:latest
+        volumeMounts:
+        - name: log-dir
+          mountPath: /logtest
+      # Temporary directory that shares a pod's lifetime
+      volumes:
+      - name: log-dir
+        emptyDir: {}
