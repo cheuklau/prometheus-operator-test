@@ -65,7 +65,7 @@ This will deploy the following into the Kubernetes cluster:
 * Pod running Kibana reading in the data from Elasticsearch
 * Kibana service is exposed on Port 30000
 
-Next, we deploy the full monitoring stack in `prometheus-operator/contrib/kube-prometheus`. This package includes:
+Next, we deploy the full monitoring stack in `prometheus-operator/contrib/my-kube-prometheus`. This package includes:
 
 1. The Prometheus Operator
 2. Highly available Prometheus
@@ -77,7 +77,7 @@ Next, we deploy the full monitoring stack in `prometheus-operator/contrib/kube-p
 To deploy the full monitoring stack:
 
 ```
-cd Prometheus_Testing/prometheus-operator/contrib/kube-prometheus
+cd Prometheus_Testing/prometheus-operator/contrib/my-kube-prometheus
 kubectl create -f ./manifests
 ```
 
@@ -93,25 +93,43 @@ The dashboards for each service can now be visited using the links below:
 
 * [Prometheus](http://localhost:9090)
 * [Grafana](http://localhost:3000)
+  - Username: admin
+  - Password: admin
+  - The pre-rendered Grafana dashboard is titled `new` under available dashboards
 * [AlertManager](http://localhost:9093)
 
 To teardown the monitoring stack:
 
 ```
-cd Prometheus_Testing/prometheus-operator/contrib/kube-prometheus
+cd Prometheus_Testing/prometheus-operator/contrib/my-kube-prometheus
 kubectl delete -f ./manifests
 ```
 
 ## Customizing Kube-Prometheus
 
-Install Go (https://dl.google.com/go/go1.11.2.darwin-amd64.pkg) then install `jsonnet` and `gojsontoyaml`:
+Install Go (https://dl.google.com/go/go1.11.2.darwin-amd64.pkg) then install `jb`, `jsonnet` and `gojsontoyaml`:
 
 ```
+go get github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb
 go get github.com/google/go-jsonnet/jsonnet
 go get github.com/brancz/gojsontoyaml
 ```
 
-The default `example.jsonnet` is:
+Ensure the executables above are in `PATH`. Create a new directory for your project e.g., `my-kube-prometheus`:
+
+```
+mkdir my-kube-prometheus
+cd my-kube-prometheus
+```
+
+Create a new Jsonnet project and download all Prometheus Operator dependencies:
+
+```
+jb init
+jb install github.com/coreos/prometheus-operator/contrib/kube-prometheus/jsonnet/kube-prometheus
+```
+
+Create the default Jsonnet file `example.jsonnet`:
 
 ```
 local kp = (import 'kube-prometheus/kube-prometheus.libsonnet') + {
@@ -130,7 +148,7 @@ local kp = (import 'kube-prometheus/kube-prometheus.libsonnet') + {
 { ['grafana-' + name]: kp.grafana[name] for name in std.objectFields(kp.grafana) }
 ```
 
-The default settings below can be changed in `example.jsonnet`:
+Note that Jsonnet imports from `/vendor`. The default settings below can be changed in `example.jsonnet`:
 
 ```
 {
@@ -244,7 +262,7 @@ local kp = (import 'kube-prometheus/kube-prometheus.libsonnet') + {
 };
 ```
 
-To add pre-rendered Prometeus rules in `example.jsonnet`:
+To add pre-rendered Prometheus rules in `example.jsonnet`:
 
 ```
 local kp = (import 'kube-prometheus/kube-prometheus.libsonnet') + {
@@ -309,14 +327,15 @@ local kp = (import 'kube-prometheus/kube-prometheus.libsonnet') + {
     namespace: 'monitoring',
   },
   grafanaDashboards+:: {
-    'my-dashboard.json': (import 'example-grafana-dashboard.json'),
+    'my-dashboard.json': (import 'elk_monitoring_dashboard.json'),
   },
 };
 ```
 
-To compile the manifests and deploy the configured monitoring pipeline:
+Note that `elk_monitoring_dashboard.json` contains the pre-rendered Grafana dashboard for this project. To compile the manifests and deploy the configured monitoring pipeline:
 
 ```
+cd my-kube-prometheus
 ./build.sh example.jsonnet
 kubectl create -f ./manifests
 ```
