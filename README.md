@@ -95,7 +95,7 @@ The dashboards for each service can now be visited using the links below:
 * [Grafana](http://localhost:3000)
   - Username: admin
   - Password: admin
-  - The pre-rendered Grafana dashboard is titled `new` under available dashboards
+  - The pre-rendered Grafana dashboard is titled `new` under available dashboards (shown below)
 * [AlertManager](http://localhost:9093)
 
 To teardown the monitoring stack:
@@ -104,6 +104,8 @@ To teardown the monitoring stack:
 cd Prometheus_Testing/prometheus-operator/contrib/my-kube-prometheus
 kubectl delete -f ./manifests
 ```
+
+![Fig 1: Grafana pre-rendered dashboard](/images/grafana.png)
 
 ## Customizing Kube-Prometheus
 
